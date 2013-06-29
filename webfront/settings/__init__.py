@@ -32,7 +32,7 @@ TEMPLATE_LOADERS = (
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': os.path.join(PPATH,'webfront/webfront.db'),
+    'NAME': os.path.join(PPATH,'main/webfront.db'),
   }
 }
 LOGGING = {
@@ -64,8 +64,8 @@ LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
 USE_I18N = USE_L10N = USE_TZ = True
 
-ROOT_URLCONF = 'webfront.urls'
-WSGI_APPLICATION = 'webfront.wsgi.application'
+ROOT_URLCONF = 'main.urls'
+WSGI_APPLICATION = 'main.wsgi.application'
 SECRET_KEY = '5i4*stnx^12a+wow1_lrz(jb!d*e^tkzq+t8o)_5f-2$n9k*@a'
 
 # Remove characters that are invalid for python modules.
