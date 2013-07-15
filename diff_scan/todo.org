@@ -1,0 +1,4 @@
+* diff image
+** save a series of coordinates for overlays rather than drawing a new image
+* performance
+** Scan some 10 rows at once to look for the difference. Then fine tune it. Maybe binary search?

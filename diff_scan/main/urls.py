@@ -5,8 +5,8 @@ admin.autodiscover()
 
 urlpatterns = patterns(
   '',
-  (r'^grappelli/', include('grappelli.urls')),
   url(r'^admin/', include(admin.site.urls)),
+  url(r'^test/(\d+)/','main.views.test'),
 )
 
 if settings.DEBUG:

@@ -1,0 +1,7 @@
+{
+  "domain": "dev.txrxlabs.org:8009",
+  "pages": [
+    "/",
+    "/event/"
+  ]
+}

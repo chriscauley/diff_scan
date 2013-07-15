@@ -1,6 +1,6 @@
 import os, sys, re, socket
 SPATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..')) # directory containing settings/
-PPATH = os.path.join(SPATH,"..") # project root
+PPATH = SPATH
 UPLOAD_DIR = 'uploads'
 
 DEBUG = TEMPLATE_DEBUG = True
