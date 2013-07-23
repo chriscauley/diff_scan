@@ -13,12 +13,17 @@ class Page(models.Model):
   diff_image = models.ImageField(upload_to='diffs',null=True,blank=True)
   site = models.ForeignKey(Site)
   accepted = models.BooleanField(default=True)
+  screen_sizes = models.ManyToManyField("ScreenSize",null=True,blank=True)
   def get_absolute_url(self):
     if '://' in self.site.domain:
       return self.site.domain+self.path
     return 'http://%s%s'%(self.site.domain,self.path)
   __unicode__ = lambda self: self.get_absolute_url()
-  def test(self):
+  def test_all_sizes(self):
+    screen_sizes = self.screen_sizes.all() or [ScreenSize(width=0,height=0)]
+    for size in screen_sizes:
+      self.test((size.width,size.height))
+  def test(self,size=(0,0)):
     screenshot_dir = os.path.join(settings.MEDIA_ROOT,'screenshots')
     output_dir = os.path.join(settings.MEDIA_ROOT,'screenshots',str(self.id))
     diff_dir = os.path.join(settings.MEDIA_ROOT,'diffs')
@@ -56,3 +61,15 @@ class Page(models.Model):
     self.test_image = self.diff_image = None
     self.accepted = True
     self.save()
+
+class PageTest(models.Model):
+  #this will hold the images and the sizes for each test
+  #unique together in Page and size
+  pass
+
+class ScreenSize(models.Model):
+  _ht = "In pixels; 0 will default to an automatic size"
+  width = models.IntegerField(default=0,help_text=_ht)
+  height = models.IntegerField(default=0,help_text=_ht)
+  name = models.CharField(max_length=64,null=True,blank=True)
+  __unicode__ = lambda self: "%s (%sx%s)"%(name or "Unnamed",width,height)
