@@ -1,2 +1,6 @@
 *.pyc
 *~
+.media/
+.static/
+.e/
+diff_scan/main/webfront.db
