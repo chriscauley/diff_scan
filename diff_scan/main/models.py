@@ -13,7 +13,7 @@ class Page(models.Model):
   diff_image = models.ImageField(upload_to='diffs',null=True,blank=True)
   site = models.ForeignKey(Site)
   accepted = models.BooleanField(default=True)
-  screen_sizes = models.ManyToManyField("ScreenSize",null=True,blank=True)
+  screen_sizes = models.ManyToManyField("ScreenSize",blank=True)
   def get_absolute_url(self):
     if '://' in self.site.domain:
       return self.site.domain+self.path
@@ -32,7 +32,14 @@ class Page(models.Model):
         os.mkdir(d)
     f_name = datetime.datetime.now().strftime("%Y%m%d%H%M%S.png")
     output_path = os.path.join(output_dir,f_name)
-    process = subprocess.Popen('xvfb-run --server-args="-screen 0, 1024x768x24" webkit2png %s > %s'%(self.get_absolute_url(),output_path),shell=True)
+    parts = [
+      "wkhtmltoimage",
+      self.get_absolute_url(),
+      output_path,
+      "--width %s"%size[0] if size[0] else '',
+      "--height %s"%size[1] if size[1] else '',
+      ]
+    process = subprocess.Popen(' '.join(parts),shell=True)
     process.communicate()[0]
     if self.test_image:
       os.remove(self.test_image.path)
@@ -72,4 +79,4 @@ class ScreenSize(models.Model):
   width = models.IntegerField(default=0,help_text=_ht)
   height = models.IntegerField(default=0,help_text=_ht)
   name = models.CharField(max_length=64,null=True,blank=True)
-  __unicode__ = lambda self: "%s (%sx%s)"%(name or "Unnamed",width,height)
+  __unicode__ = lambda self: "%s (%sx%s)"%(self.name or "Unnamed",self.width,self.height)

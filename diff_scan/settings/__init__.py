@@ -1,15 +1,14 @@
 import os, sys, re, socket
-SPATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '..')) # directory containing settings/
-PPATH = SPATH
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPLOAD_DIR = 'uploads'
 
 DEBUG = TEMPLATE_DEBUG = True
 ADMINS = MANAGERS = (
 )
 
-MEDIA_ROOT = os.path.join(PPATH,'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR,'.media/')
 MEDIA_URL = '/media/'
-STATIC_ROOT = os.path.join(PPATH,'static/')
+STATIC_ROOT = os.path.join(BASE_DIR,'.static/')
 STATIC_URL = '/static/'
 
 STATICFILES_FINDERS = (
@@ -17,13 +16,29 @@ STATICFILES_FINDERS = (
   'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 MIDDLEWARE_CLASSES = (
-  'django.middleware.common.CommonMiddleware',
   'django.contrib.sessions.middleware.SessionMiddleware',
+  'django.middleware.common.CommonMiddleware',
   'django.middleware.csrf.CsrfViewMiddleware',
   'django.contrib.auth.middleware.AuthenticationMiddleware',
+  'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
   'django.contrib.messages.middleware.MessageMiddleware',
+  'django.middleware.clickjacking.XFrameOptionsMiddleware',
+  'django.middleware.security.SecurityMiddleware',
 )
-TEMPLATE_DIRS = (os.path.join(SPATH,'templates'),)
+TEMPLATES = [
+  {'BACKEND': 'django.template.backends.django.DjangoTemplates',
+   'DIRS': [os.path.join(BASE_DIR,'templates')],
+   'APP_DIRS': True,
+   'OPTIONS': {
+      'context_processors': [
+        'django.template.context_processors.debug',
+        'django.template.context_processors.request',
+        'django.contrib.auth.context_processors.auth',
+        'django.contrib.messages.context_processors.messages',
+        ],
+      },
+   },
+]
 STATICFILES_DIRS = ()
 TEMPLATE_LOADERS = (
   'django.template.loaders.filesystem.Loader',
@@ -32,46 +47,23 @@ TEMPLATE_LOADERS = (
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': os.path.join(PPATH,'main/webfront.db'),
-  }
-}
-LOGGING = {
-  'version': 1,
-  'disable_existing_loggers': False,
-  'filters': {
-    'require_debug_false': {
-      '()': 'django.utils.log.RequireDebugFalse'
-    }
-  },
-  'handlers': {
-    'mail_admins': {
-      'level': 'ERROR',
-      'filters': ['require_debug_false'],
-      'class': 'django.utils.log.AdminEmailHandler'
-    }
-  },
-  'loggers': {
-    'django.request': {
-      'handlers': ['mail_admins'],
-      'level': 'ERROR',
-      'propagate': True,
-    },
+    'NAME': os.path.join(BASE_DIR,'main/webfront.db'),
   }
 }
 
 TIME_ZONE = 'America/Chicago'
 LANGUAGE_CODE = 'en-us'
-SITE_ID = 1
 USE_I18N = USE_L10N = USE_TZ = True
 
 ROOT_URLCONF = 'main.urls'
 WSGI_APPLICATION = 'main.wsgi.application'
 SECRET_KEY = '5i4*stnx^12a+wow1_lrz(jb!d*e^tkzq+t8o)_5f-2$n9k*@a'
 
-# Remove characters that are invalid for python modules.
-machine = re.sub('[^A-z0-9._]', '_', socket.gethostname())
+from .apps import *
+
+# Import a setting file naed after hostname
 try:
-  istr = 'settings.' + machine
+  istr = 'settings.' + re.sub('[^A-z0-9._]', '_', socket.gethostname())
   tmp = __import__(istr)
   mod = sys.modules[istr]
 except ImportError:
@@ -86,4 +78,3 @@ try:
 except ImportError:
   pass
 
-from .apps import *
