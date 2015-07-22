@@ -8,22 +8,16 @@ import subprocess, urllib, os, datetime
 
 class Page(models.Model):
   path = models.TextField()
-  stable_image = models.ImageField(upload_to='screenshots',null=True,blank=True)
-  test_image = models.ImageField(upload_to='screenshots',null=True,blank=True)
-  diff_image = models.ImageField(upload_to='diffs',null=True,blank=True)
   site = models.ForeignKey(Site)
-  accepted = models.BooleanField(default=True)
-  screen_sizes = models.ManyToManyField("ScreenSize",blank=True)
   def get_absolute_url(self):
     if '://' in self.site.domain:
       return self.site.domain+self.path
     return 'http://%s%s'%(self.site.domain,self.path)
   __unicode__ = lambda self: self.get_absolute_url()
-  def test_all_sizes(self):
-    screen_sizes = self.screen_sizes.all() or [ScreenSize(width=0,height=0)]
-    for size in screen_sizes:
-      self.test((size.width,size.height))
-  def test(self,size=(0,0)):
+  def test(self,screensize):
+    pagetest,new = PageTest.objects.get_or_create(page=self,screensize=screensize)
+    w = screensize.width
+    h = screensize.height
     screenshot_dir = os.path.join(settings.MEDIA_ROOT,'screenshots')
     output_dir = os.path.join(settings.MEDIA_ROOT,'screenshots',str(self.id))
     diff_dir = os.path.join(settings.MEDIA_ROOT,'diffs')
@@ -34,49 +28,54 @@ class Page(models.Model):
     output_path = os.path.join(output_dir,f_name)
     parts = [
       "wkhtmltoimage",
+      "--width %s"%w if w else '',
+      "--height %s"%h if h else '',
       self.get_absolute_url(),
       output_path,
-      "--width %s"%size[0] if size[0] else '',
-      "--height %s"%size[1] if size[1] else '',
       ]
+    print ' '.join(parts)
     process = subprocess.Popen(' '.join(parts),shell=True)
     process.communicate()[0]
-    if self.test_image:
-      os.remove(self.test_image.path)
+    if pagetest.test_image:
+      os.remove(pagetest.test_image.path)
 
     # image has never been tested before
-    if not self.stable_image:
-      self.stable_image = output_path.split('media/')[-1]
+    if not pagetest.stable_image:
+      pagetest.stable_image = output_path.split('media/')[-1]
       accepted = True
-      self.save()
+      pagetest.save()
       return
 
-    diff_path = os.path.join(diff_dir,"%s.png"%self.id)
-    different = image_diff(self.stable_image.path,output_path,diff_path)
+    diff_path = os.path.join(diff_dir,"%s.png"%pagetest.id)
+    different = image_diff(pagetest.stable_image.path,output_path,diff_path)
 
     if not different:
       return
 
     # page has changed!
-    self.test_image = output_path.split('media/')[-1]
-    self.diff_image = diff_path.split('media/')[-1]
-    self.accepted = False
-    self.save()
-
-  def accept(self):
-    self.stable_image = self.test_image
-    self.test_image = self.diff_image = None
-    self.accepted = True
-    self.save()
-
-class PageTest(models.Model):
-  #this will hold the images and the sizes for each test
-  #unique together in Page and size
-  pass
+    pagetest.test_image = output_path.split('media/')[-1]
+    pagetest.diff_image = diff_path.split('media/')[-1]
+    pagetest.accepted = False
+    pagetest.save()
 
 class ScreenSize(models.Model):
   _ht = "In pixels; 0 will default to an automatic size"
   width = models.IntegerField(default=0,help_text=_ht)
   height = models.IntegerField(default=0,help_text=_ht)
   name = models.CharField(max_length=64,null=True,blank=True)
+  sites = models.ManyToManyField(Site)
   __unicode__ = lambda self: "%s (%sx%s)"%(self.name or "Unnamed",self.width,self.height)
+
+class PageTest(models.Model):
+  page = models.ForeignKey(Page)
+  screensize = models.ForeignKey(ScreenSize)
+  stable_image = models.ImageField(upload_to='screenshots',null=True,blank=True)
+  test_image = models.ImageField(upload_to='screenshots',null=True,blank=True)
+  diff_image = models.ImageField(upload_to='diffs',null=True,blank=True)
+  accepted = models.BooleanField(default=True)
+  error_code = models.IntegerField(null=True,blank=True)
+  def accept(self):
+    self.stable_image = self.test_image
+    self.test_image = self.diff_image = None
+    self.accepted = True
+    self.save()
