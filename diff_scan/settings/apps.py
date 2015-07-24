@@ -8,7 +8,10 @@ INSTALLED_APPS = (
   'django.contrib.sites',
   'django.contrib.messages',
   'django.contrib.staticfiles',
+
   'compressor',
+  'sorl.thumbnail',
+
   'main',
 )
 

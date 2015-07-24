@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
     {% compress css %}
-    <link rel="stylesheet/less" type="text/css" href="{{ STATIC_URL }}less/base.less" />
+    <link rel="stylesheet" type="text/less" href="/static/less/base.less" />
     {% endcompress %}
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/base.js"></script>
@@ -29,18 +29,14 @@
   </head>
 
   <body>
-    <div id="wrapper">
-      <div id="header">
-	      {% block header %}{% include "header.html" %}{% endblock %}
-      </div>
-      <div id="content">
-        {% block messages %}{% include "_messages.html" %}{% endblock %}
-	      {% block content %}
-	      <div id="main">{% block main %}{% endblock %}</div>
-	      <div id="side">{% block side %}{% endblock %}</div>
-	      {% endblock %}
-        <div id="footer">{% include "footer.html" %}</div>
-      </div>
+	  {% block header %}{% include "_header.html" %}{% endblock %}
+    <div id="content" class="container">
+      {% block messages %}{% include "_messages.html" %}{% endblock %}
+	    {% block content %}
+	    <div id="main">{% block main %}{% endblock %}</div>
+	    <div id="side">{% block side %}{% endblock %}</div>
+	    {% endblock %}
+      <div id="footer">{% include "footer.html" %}</div>
     </div>
   </body>
 </html>
