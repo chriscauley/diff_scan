@@ -15,7 +15,7 @@ class Page(models.Model):
     return 'http://%s%s'%(self.site.domain,self.path)
   __unicode__ = lambda self: self.get_absolute_url()
   def test(self,screensize):
-    pagetest,new = PageTest.objects.get_or_create(page=self,screensize=screensize)
+    page_test,new = PageTest.objects.get_or_create(page=self,screensize=screensize)
     w = screensize.width
     h = screensize.height
     screenshot_dir = os.path.join(settings.MEDIA_ROOT,'screenshots')
@@ -36,32 +36,39 @@ class Page(models.Model):
     print ' '.join(parts)
     process = subprocess.Popen(' '.join(parts),shell=True)
     process.communicate()[0]
-    if pagetest.test_image:
-      os.remove(pagetest.test_image.path)
+    if page_test.test_image:
+      os.remove(page_test.test_image.path)
 
     # image has never been tested before
-    if not pagetest.stable_image:
-      pagetest.stable_image = output_path.split('media/')[-1]
+    if not page_test.stable_image:
+      page_test.stable_image = output_path.split('media/')[-1]
       accepted = True
-      pagetest.save()
+      page_test.save()
       return
 
-    diff_path = os.path.join(diff_dir,"%s.png"%pagetest.id)
-    different = image_diff(pagetest.stable_image.path,output_path,diff_path)
+    diff_path = os.path.join(diff_dir,"%s.png"%page_test.id)
+    different = image_diff(page_test.stable_image.path,output_path,diff_path)
 
     if not different:
       return
 
     # page has changed!
-    pagetest.test_image = output_path.split('media/')[-1]
-    pagetest.diff_image = diff_path.split('media/')[-1]
-    pagetest.accepted = False
-    pagetest.save()
+    page_test.test_image = output_path.split('media/')[-1]
+    page_test.diff_image = diff_path.split('media/')[-1]
+    page_test.accepted = False
+    page_test.save()
+
+SIZE_ICON_CHOICES = (
+  ('desktop','Desktop'),
+  ('mobile','Mobile'),
+  ('tablet','Tablet'),
+)
 
 class ScreenSize(models.Model):
   _ht = "In pixels; 0 will default to an automatic size"
   width = models.IntegerField(default=0,help_text=_ht)
   height = models.IntegerField(default=0,help_text=_ht)
+  icon = models.CharField(max_length=16,choices=SIZE_ICON_CHOICES)
   name = models.CharField(max_length=64,null=True,blank=True)
   sites = models.ManyToManyField(Site)
   __unicode__ = lambda self: "%s (%sx%s)"%(self.name or "Unnamed",self.width,self.height)
