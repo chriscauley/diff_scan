@@ -7,6 +7,7 @@ urlpatterns = patterns(
   '',
   url(r'^admin/', include(admin.site.urls)),
   url(r'^test/(\d+)/','main.views.test'),
+  url(r'^bulk_add_url/','main.views.bulk_add_url'),
 )
 
 if settings.DEBUG:
