@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+
+{% block content %}
+<div class="row">
+  {% for page in pages %}
+  <div class="col-sm-3">
+    <div class="page-well well">
+      <div class="img">
+      </div>
+      <div class="path">{{ page.path }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

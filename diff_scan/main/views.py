@@ -22,3 +22,10 @@ def bulk_add_url(request):
         return HttpResponseRedirect(request.path)
     values = {'form': form}
     return TemplateResponse(request,"bulk_upload.html",values)
+
+def index(request):
+    pages = Page.objects.all()
+    values = {
+        'pages': pages,
+        }
+    return TemplateResponse(request,"index.html",values)
