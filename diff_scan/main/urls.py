@@ -7,8 +7,11 @@ urlpatterns = patterns(
   '',
   url(r'^$', 'main.views.index'),
   url(r'^admin/', include(admin.site.urls)),
-  url(r'^test/(\d+)/','main.views.test'),
+  url(r'^page/(\d+)/','main.views.page_detail',name="page_detail"),
   url(r'^bulk_add_url/','main.views.bulk_add_url'),
+  url(r'^page/(clear|test)/(\d+)/$','main.views.action',name="page_action"),
+  url(r'^page/(clear|test)/(\d+)/(\d+)/$','main.views.action',name="page_action"),
+  url(r'^media_files/',include('media.urls')),
 )
 
 if settings.DEBUG:

@@ -3,3 +3,5 @@ Pillow==2.9.0
 -e git+https://github.com/chriscauley/Django-Crop-Override-Field.git@f86269bdd7394c054af8c95913e0efdf7c6a2884#egg=crop_override-dev
 django-compressor==1.5
 sorl-thumbnail==12.3
+
+django-next-please

@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 from django.db import models
 
-from utils import image_diff
+from img_utils import image_diff
+from media.models import Photo
 
 import subprocess, urllib, os, datetime
 
@@ -10,10 +12,12 @@ class Page(models.Model):
   path = models.TextField()
   site = models.ForeignKey(Site)
   def get_absolute_url(self):
+    return reverse('page_detail',args=[self.pk])
+  def get_site_url(self):
     if '://' in self.site.domain:
       return self.site.domain+self.path
     return 'http://%s%s'%(self.site.domain,self.path)
-  __unicode__ = lambda self: self.get_absolute_url()
+  __unicode__ = lambda self: self.get_site_url()
   def test(self,screensize):
     page_test,new = PageTest.objects.get_or_create(page=self,screensize=screensize)
     w = screensize.width
@@ -30,7 +34,7 @@ class Page(models.Model):
       "wkhtmltoimage",
       "--width %s"%w if w else '',
       "--height %s"%h if h else '',
-      self.get_absolute_url(),
+      self.get_site_url(),
       output_path,
       ]
     print ' '.join(parts)
@@ -79,8 +83,15 @@ class PageTest(models.Model):
   stable_image = models.ImageField(upload_to='screenshots',null=True,blank=True)
   test_image = models.ImageField(upload_to='screenshots',null=True,blank=True)
   diff_image = models.ImageField(upload_to='diffs',null=True,blank=True)
+  design = models.ForeignKey(Photo,null=True,blank=True)
   accepted = models.BooleanField(default=True)
   error_code = models.IntegerField(null=True,blank=True)
+  def get_images(self):
+    return [
+      ('Stable',self.stable_image),
+      ('Test',self.test_image),
+      ('Diff',self.diff_image),
+      ]
   def accept(self):
     self.stable_image = self.test_image
     self.test_image = self.diff_image = None

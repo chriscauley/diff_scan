@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+
+{% block content %}
+<div class="page-menu">
+  {% for page_test in page.pagetest_set.all %}
+  <button class="fa fa-{{ page_test.screensize.icon }} btn btn-primary"></button>
+  {% endfor %}
+</div>
+<div class="page-preview">
+  {% for page_test in page.pagetest_set.all %}
+  <div class="row" id="previewer_{{ page_test.pk }}">
+    {% for name,image in page_test.get_images %}
+    <div class="col-sm-3">
+      {% if image %}
+      <button class="btn btn-primary btn-block" onmouseover="showImage('{{ image.url }}');">{{ name }}</button>
+      {% else %}
+      <button class="btn btn-disabled btn-block">{{ name }}</button>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="col-sm-3">
+      <a href="/page/clear/{{ page.pk }}/{{ page_test.pk }}/" class="btn btn-danger">Clear</a>
+      <a href="/page/test/{{ page.pk }}/{{ page_test.pk }}/" class="btn btn-success">Test</a>
+    </div>
+    <div class="col-sm-12">
+      <div id="preview_images"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<script>
+  var showImage = (function() {
+    var images = {};
+    return function (url) {
+      if (images[url]) {
+        $("#preview_images img").not(images[url]).hide();
+        $(images[url]).show();
+        return;
+      }
+      $("#preview_images img").hide();
+      var img = document.createElement("img");
+      img.src = url;
+      images[url] = img;
+      $("#preview_images").append(img);
+      console.log(images);
+    }
+  })();
+</script>
+{% endblock %}
