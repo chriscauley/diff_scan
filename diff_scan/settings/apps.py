@@ -13,6 +13,7 @@ INSTALLED_APPS = (
   'sorl.thumbnail',
 
   'main',
+  'media',
 )
 
 try:
