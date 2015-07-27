@@ -20,7 +20,7 @@ import json
 def index(request):
   photos = Photo.objects.all()
   values = {
-    'photos': photos,
+    'photos': [json.dumps(p.as_json) for p in photos],
     'content_type': '',
     'object_id': 0
     }
@@ -126,8 +126,8 @@ def tag_photo(request):
 def bulk_photo_upload(request):
   image_list = []
   if request.method == "POST" and request.FILES:
-    natural_key = request.POST.get('content_type').split('.')
-    if natural_key:
+    if request.POST.get('content_type',None):
+      natural_key = request.POST['content_type'].split('.')
       content_type = ContentType.objects.get_by_natural_key(*natural_key)
     for f in request.FILES.getlist('file'):
       try:
@@ -143,7 +143,7 @@ def bulk_photo_upload(request):
         user=request.user
       )
       image_list.append(photo.as_json)
-      if natural_key:
+      if request.POST.get('content_type',None):
         TaggedPhoto.objects.create(
           photo=photo,
           object_id=request.POST['object_id'],
