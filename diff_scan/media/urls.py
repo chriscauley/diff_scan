@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns(
   'media.views',
+  url(r'^photo/$','index',name='photo_index'),
   url(r'^photo/search/$','photo_search',name='photo_search'),
   url(r'^photo/tag/$','tag_photo',name='tag_photo'),
   url(r'^photo/insert/$','insert_photo',name='insert_photo'),

@@ -17,6 +17,16 @@ from PIL import Image
 import json
 
 @staff_member_required
+def index(request):
+  photos = Photo.objects.all()
+  values = {
+    'photos': photos,
+    'content_type': '',
+    'object_id': 0
+    }
+  return TemplateResponse(request,'photo/index.html',values)
+
+@staff_member_required
 @pagination('photos',per_page=12,orphans=5)
 def insert_photo(request):
   photos = Photo.objects.all()
@@ -117,7 +127,8 @@ def bulk_photo_upload(request):
   image_list = []
   if request.method == "POST" and request.FILES:
     natural_key = request.POST.get('content_type').split('.')
-    content_type = ContentType.objects.get_by_natural_key(*natural_key)
+    if natural_key:
+      content_type = ContentType.objects.get_by_natural_key(*natural_key)
     for f in request.FILES.getlist('file'):
       try:
         Image.open(f)
@@ -132,11 +143,12 @@ def bulk_photo_upload(request):
         user=request.user
       )
       image_list.append(photo.as_json)
-      TaggedPhoto.objects.create(
-        photo=photo,
-        object_id=request.POST['object_id'],
-        content_type=content_type,
-      )
+      if natural_key:
+        TaggedPhoto.objects.create(
+          photo=photo,
+          object_id=request.POST['object_id'],
+          content_type=content_type,
+        )
   return HttpResponse(json.dumps(image_list))
 
 @csrf_exempt

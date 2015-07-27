@@ -46,6 +46,7 @@ class TaggedPhotoAdmin(admin.ModelAdmin):
       'opts': self.model._meta,
       'photos': json.dumps([p.as_json for p in obj.get_photos()]),
       'obj': obj,
+      'object_id': obj.id,
       'STATIC_URL':settings.STATIC_URL
     }
     print values
