@@ -20,8 +20,8 @@ class Page(models.Model):
   __unicode__ = lambda self: self.get_site_url()
   def test(self,screensize):
     page_test,new = PageTest.objects.get_or_create(page=self,screensize=screensize)
-    w = screensize.width
-    h = screensize.height
+    w = screensize.width or 1400
+    h = screensize.height or 3000
     screenshot_dir = os.path.join(settings.MEDIA_ROOT,'screenshots')
     output_dir = os.path.join(settings.MEDIA_ROOT,'screenshots',str(self.id))
     diff_dir = os.path.join(settings.MEDIA_ROOT,'diffs')
@@ -46,21 +46,22 @@ class Page(models.Model):
     # image has never been tested before
     if not page_test.stable_image:
       page_test.stable_image = output_path.split('media/')[-1]
-      accepted = True
+      page_testaccepted = True
       page_test.save()
-      return
+      return True
 
     diff_path = os.path.join(diff_dir,"%s.png"%page_test.id)
     different = image_diff(page_test.stable_image.path,output_path,diff_path)
 
     if not different:
-      return
+      return True
 
     # page has changed!
     page_test.test_image = output_path.split('media/')[-1]
     page_test.diff_image = diff_path.split('media/')[-1]
     page_test.accepted = False
     page_test.save()
+    return False
 
 SIZE_ICON_CHOICES = (
   ('desktop','Desktop'),

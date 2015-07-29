@@ -29,8 +29,16 @@ def action(request,action,page_pk,test_pk):
     if action == 'clear':
       test.stable_image = test.test_image = test.diff_image = ''
       test.save()
+      messages.success(request,"PageTest cleared: %s"%test)
     elif action == 'test':
-      page.test(test.screensize)
+      accepted = page.test(test.screensize)
+      if accepted:
+        messages.success(request,"Test Passed: %s"%test)
+      else:
+        messages.error(request,"Test Failed: %s"%test)
+    elif action == 'accept':
+      test.accept()
+      messages.success(request,"Test Accepted: %s"%test)
   return HttpResponseRedirect(page.get_absolute_url())
 
 def bulk_add_url(request):

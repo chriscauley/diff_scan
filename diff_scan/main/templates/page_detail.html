@@ -22,6 +22,8 @@
     <div class="col-sm-3">
       <a href="/page/clear/{{ page.pk }}/{{ page_test.pk }}/" class="btn btn-danger">Clear</a>
       <a href="/page/test/{{ page.pk }}/{{ page_test.pk }}/" class="btn btn-success">Test</a>
+      <a class="btn btn-success"{% if page_test.accepted %} disabled="disabled"{% else %}
+         href="/page/accept/{{ page.pk }}/{{ page_test.pk }}/"{% endif %}>Accept</a>
     </div>
     <div class="col-sm-12">
       <div id="preview_images"></div>
