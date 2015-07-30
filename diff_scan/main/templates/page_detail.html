@@ -4,16 +4,17 @@
 {% block content %}
 <div class="page-menu">
   {% for page_test in page.pagetest_set.all %}
-  <button class="fa fa-{{ page_test.screensize.icon }} btn btn-primary"></button>
+  <button class="fa fa-{{ page_test.screensize.icon }} btn btn-primary"
+          onclick="showTests('#previewer_{{ page_test.pk }}')"></button>
   {% endfor %}
 </div>
 <div class="page-preview">
   {% for page_test in page.pagetest_set.all %}
-  <div class="row" id="previewer_{{ page_test.pk }}">
+  <div class="row page_tests" id="previewer_{{ page_test.pk }}"{% if not forloop.first %} style="display:none"{% endif %}>
     {% for name,image in page_test.get_images %}
     <div class="col-sm-3">
       {% if image %}
-      <button class="btn btn-primary btn-block" onmouseover="showImage('{{ image.url }}');">{{ name }}</button>
+      <button class="btn btn-primary btn-block" onmouseover="showImage('{{ image.url }}',this);">{{ name }}</button>
       {% else %}
       <button class="btn btn-disabled btn-block">{{ name }}</button>
       {% endif %}
@@ -25,27 +26,31 @@
       <a class="btn btn-success"{% if page_test.accepted %} disabled="disabled"{% else %}
          href="/page/accept/{{ page.pk }}/{{ page_test.pk }}/"{% endif %}>Accept</a>
     </div>
-    <div class="col-sm-12">
-      <div id="preview_images"></div>
+    <div class="col-xs-12">
+      <div class="preview_images"></div>
     </div>
   </div>
   {% endfor %}
 </div>
 <script>
+  function showTests(selector) {
+    $(".page_tests").hide();
+    $(selector).show();
+  };
   var showImage = (function() {
     var images = {};
-    return function (url) {
+    return function (url,that) {
+      var preview = $(that).closest(".row").find(".preview_images");
       if (images[url]) {
-        $("#preview_images img").not(images[url]).hide();
+        preview.find("img").not(images[url]).hide();
         $(images[url]).show();
         return;
       }
-      $("#preview_images img").hide();
+      preview.find("img").hide();
       var img = document.createElement("img");
       img.src = url;
       images[url] = img;
-      $("#preview_images").append(img);
-      console.log(images);
+      preview.append(img);
     }
   })();
 </script>

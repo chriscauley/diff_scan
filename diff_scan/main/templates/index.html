@@ -6,11 +6,11 @@
   {% for page in pages %}
   <div class="col-sm-3">
     <div class="page-well well">
-      <div class="path">{{ page.path }}</div>
+      <div class="path">{{ page }}</div>
       <div class="img">
       </div>
       {{ page.pagetest_set.count }} Tests
-      <a href="{% url "test_page" page.pk %}" class="btn btn-success btn-block">Test All</a>
+      <a href="{% url "page_action" "test" page.pk %}" class="btn btn-success btn-block">Test All</a>
       <a href="{% url "page_detail" page.pk %}" class="btn btn-primary btn-block">View Page</a>
     </div>
   </div>

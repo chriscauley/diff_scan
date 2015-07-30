@@ -9,6 +9,7 @@ from media.models import Photo
 import subprocess, urllib, os, datetime
 
 class Page(models.Model):
+  name = models.CharField(max_length=128,null=True,blank=True)
   path = models.TextField()
   site = models.ForeignKey(Site)
   def get_absolute_url(self):
@@ -17,7 +18,7 @@ class Page(models.Model):
     if '://' in self.site.domain:
       return self.site.domain+self.path
     return 'http://%s%s'%(self.site.domain,self.path)
-  __unicode__ = lambda self: self.get_site_url()
+  __unicode__ = lambda self: self.name or self.path
   def test(self,screensize):
     page_test,new = PageTest.objects.get_or_create(page=self,screensize=screensize)
     w = screensize.width or 1400
@@ -34,12 +35,15 @@ class Page(models.Model):
       "wkhtmltoimage",
       "--width %s"%w if w else '',
       "--height %s"%h if h else '',
+      "--disable-javascript",
       self.get_site_url(),
       output_path,
       ]
-    print ' '.join(parts)
     process = subprocess.Popen(' '.join(parts),shell=True)
-    process.communicate()[0]
+    output = process.communicate()
+    if process.returncode: # non-zero means there was an error
+      e = "Attempt to generate screenshot failed for url: %s.\n"
+      raise RuntimeError(e%self.get_site_url())
     if page_test.test_image:
       os.remove(page_test.test_image.path)
 
@@ -62,6 +66,10 @@ class Page(models.Model):
     page_test.accepted = False
     page_test.save()
     return False
+  def save(self,*args,**kwargs):
+    super(Page,self).save(*args,**kwargs)
+    for size in self.site.screensize_set.all():
+      PageTest.objects.get_or_create(page=self,screensize=size)
 
 SIZE_ICON_CHOICES = (
   ('desktop','Desktop'),
@@ -87,6 +95,7 @@ class PageTest(models.Model):
   design = models.ForeignKey(Photo,null=True,blank=True)
   accepted = models.BooleanField(default=True)
   error_code = models.IntegerField(null=True,blank=True)
+  __unicode__ = lambda self: "%s for %s"%(self.screensize, self.page)
   def get_images(self):
     return [
       ('Stable',self.stable_image),

@@ -20,7 +20,7 @@ def page_detail(request,pk):
   }
   return TemplateResponse(request,"page_detail.html",values)
 
-def action(request,action,page_pk,test_pk):
+def action(request,action,page_pk,test_pk=None):
   page = get_object_or_404(Page,pk=page_pk)
   tests = page.pagetest_set.all()
   if test_pk:
