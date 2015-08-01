@@ -2,8 +2,10 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.timezone import now
 
 from img_utils import image_diff
+from main.utils import cached_property
 from media.models import Photo
 
 import subprocess, urllib, os, datetime
@@ -19,6 +21,14 @@ class Page(models.Model):
       return self.site.domain+self.path
     return 'http://%s%s'%(self.site.domain,self.path)
   __unicode__ = lambda self: self.name or self.path
+  @cached_property
+  def stale_tests(self):
+    stale = 0
+    stale_date = now() - datetime.timedelta(2)
+    for page_test in self.pagetest_set.all():
+      if not page_test.last_passed or page_test.last_passed < stale_date:
+        stale += 1
+    return stale
   def test(self,screensize):
     page_test,new = PageTest.objects.get_or_create(page=self,screensize=screensize)
     w = screensize.width or 1400
@@ -39,6 +49,7 @@ class Page(models.Model):
       self.get_site_url(),
       output_path,
       ]
+    print ' '.join(parts)
     process = subprocess.Popen(' '.join(parts),shell=True)
     output = process.communicate()
     if process.returncode: # non-zero means there was an error
@@ -64,6 +75,7 @@ class Page(models.Model):
     page_test.test_image = output_path.split('media/')[-1]
     page_test.diff_image = diff_path.split('media/')[-1]
     page_test.accepted = False
+    page_test.last_passed = datetime.datetime.now()
     page_test.save()
     return False
   def save(self,*args,**kwargs):
@@ -95,6 +107,7 @@ class PageTest(models.Model):
   design = models.ForeignKey(Photo,null=True,blank=True)
   accepted = models.BooleanField(default=True)
   error_code = models.IntegerField(null=True,blank=True)
+  last_passed = models.DateTimeField(null=True,blank=True)
   __unicode__ = lambda self: "%s for %s"%(self.screensize, self.page)
   def get_images(self):
     return [
@@ -106,4 +119,5 @@ class PageTest(models.Model):
     self.stable_image = self.test_image
     self.test_image = self.diff_image = None
     self.accepted = True
+    self.last_passed = datetime.datetime.now()
     self.save()

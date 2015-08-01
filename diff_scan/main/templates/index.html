@@ -9,7 +9,7 @@
       <div class="path">{{ page }}</div>
       <div class="img">
       </div>
-      {{ page.pagetest_set.count }} Tests
+      {{ page.stale_tests }}/{{ page.pagetest_set.count }} Stale Tests
       <a href="{% url "page_action" "test" page.pk %}" class="btn btn-success btn-block">Test All</a>
       <a href="{% url "page_detail" page.pk %}" class="btn btn-primary btn-block">View Page</a>
     </div>
